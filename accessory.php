@@ -69,6 +69,8 @@ function _card(&$PDOdb, &$object) {
 	
     dol_fiche_head($head, 'accessory', $titre, 0, $picto);
 
+	headerProduct($object);
+
 	$formCore = new TFormCore('auto','formAcc','get');
 	echo $formCore->hidden('action', 'save');
 	echo $formCore->hidden('fk_object',  $object->id);
@@ -109,4 +111,50 @@ function _card(&$PDOdb, &$object) {
 	
 	llxFooter();
 	
+}
+
+function headerProduct(&$object) {
+   global $langs, $conf, $db; 
+    
+    $form = new Form($db);
+        
+    print '<table class="border" width="100%">';
+    
+    
+    // Ref
+    print '<tr>';
+    print '<td width="15%">' . $langs->trans("Ref") . '</td><td colspan="2">';
+    print $form->showrefnav($object, 'ref', '', 1, 'ref');
+    print '</td>';
+    print '</tr>';
+    
+    // Label
+    print '<tr><td>' . $langs->trans("Label") . '</td><td>' . ($object->label ? $object->label : $object->libelle) . '</td>';
+    
+    $isphoto = $object->is_photo_available($conf->product->multidir_output [$object->entity]);
+    
+    $nblignes = 5;
+    if ($isphoto) {
+        // Photo
+        print '<td valign="middle" align="center" width="30%" rowspan="' . $nblignes . '">';
+        print $object->show_photos($conf->product->multidir_output [$object->entity], 1, 1, 0, 0, 0, 80);
+        print '</td>';
+    }
+    
+    print '</tr>';
+    
+    
+    // Status (to sell)
+    print '<tr><td>' . $langs->trans("Status") . ' (' . $langs->trans("Sell") . ')</td><td>';
+    print $object->getLibStatut(2, 0);
+    print '</td></tr>';
+    
+    print "</table>\n";
+    
+  echo '<br />';
+        
+   
+       
+        
+    
 }

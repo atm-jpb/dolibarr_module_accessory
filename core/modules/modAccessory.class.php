@@ -89,6 +89,8 @@ class modAccessory extends DolibarrModules
 		//                        );
 		$this->module_parts = array(
 			'triggers'=>1
+			,'hooks'=>array('propalcard','ordercard')
+			,'js'=>array('/accessory/js/accessory.js')
 		);
 
 		// Data directories to create when module is enabled.

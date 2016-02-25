@@ -59,30 +59,73 @@ class ActionsAccessory
 	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
 	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
 	 */
-	function doActions($parameters, &$object, &$action, $hookmanager)
+	function printObjectLine($parameters, &$object, &$action, $hookmanager)
 	{
-		$error = 0; // Error counter
-		$myvalue = 'test'; // A result value
-
-		print_r($parameters);
-		echo "action: " . $action;
-		print_r($object);
-
-		if (in_array('somecontext', explode(':', $parameters['context'])))
+		
+		if (in_array('propalcard', explode(':', $parameters['context'])))
 		{
-		  // do something only for the context 'somecontext'
-		}
+		 
+		 	foreach ($parameters as $key => $value) {
+				${$key} = $value;	 
+			}
+		  	
+		  	$object->printObjectLine($action,$line,$var,$num,$i,$dateSelector,$seller,$buyer,$selected,$extrafieldsline);
+		  
+		  	define('INC_FROM_DOLIBARR', true);
+		    dol_include_once('/accessory/config.php');
+			dol_include_once('/accessory/class/accessory.class.php');
+			
+		  	if($line->fk_product>0) {
+		  		
+				$PDOdb=new TPDOdb;
+				
+				$TAccessory = TAccessory::getAccessories($PDOdb, $line->fk_product, 'product');
+				
+				if(!empty($TAccessory)) {
+					
+					global $db;
+					dol_include_once('/product/class/product.class.php');
+					
+					?>
+					
+					<script type="text/javascript">
+						$("#row-<?php echo $line->id; ?>>td").first().append('&nbsp;<a href="javascript:openAccessories(<?php echo $line->id; ?>)">A</a>&nbsp;')
+					</script>
+					
+					<tr accessory-line-id="<?php echo $line->id ?>" style="display:none"><td colspan="0"><?php
+						
+						$formCore = new TFormCore;
+						
+						echo '<table width="100%" class="liste">';
+					
+						foreach($TAccessory as &$accessory) {
+							
+							$p=new Product($db);
+							if($p->fetch($accessory->fk_accessory)>0) {
+								echo '<tr>
+									<td style="padding-left:50px;">'.$p->getNomUrl(1).'</td>
+									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][qty]', $accessory->qty, 3,50).'</td>
+									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][emplacement]', $accessory->emplacement, 30,255).'</td>
+									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][note]', $accessory->note, 30,255).'</td>
+									<td>'.$formCore->checkbox1('', 'TAccessory['.$line->id.']['.$accessory->getId().'][add]', 1).'</td>
+								</tr>';
+								
+							}
+							
+						}	
 
-		if (! $error)
-		{
-			$this->results = array('myreturn' => $myvalue);
-			$this->resprints = 'A text to show';
-			return 0; // or return 1 to replace standard code
+						echo '</table>';
+
+					?></td></tr>
+					<?php
+
+				}
+				
+		  		
+		  	}
+			  	
+		  	return 1;
 		}
-		else
-		{
-			$this->errors[] = 'Error message';
-			return -1;
-		}
+		return 0;
 	}
 }
