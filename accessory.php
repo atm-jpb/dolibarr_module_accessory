@@ -19,7 +19,6 @@
 		case 'save':
 			
 			$fk_product = (int)GETPOST('fk_product');
-			var_dump($_REQUEST);
 			if($fk_product>0 && GETPOST('btadd')) {
 			
 				$a=new TAccessory;
@@ -27,8 +26,26 @@
 				$a->fk_object = $object->id;
 				$a->type_object = $object->element;
 				$a->save($PDOdb);
+				setEventMessage($langs->trans('AccessoryAdded'));
 				
 			}
+			
+			$TAccessory = GETPOST('TAccessory');
+			
+			if(!empty($TAccessory)) {
+				foreach($TAccessory as $id=>&$data) {
+					
+					$a=new TAccessory;
+					if($a->load($PDOdb, $id)) {
+						$a->set_values($data);
+						$a->save($PDOdb);
+					}
+
+				}
+				
+				setEventMessage($langs->trans('AccessoriesSaved'));	
+			}
+			
 			
 			_card($PDOdb,$object);
 			
@@ -62,7 +79,8 @@ function _card(&$PDOdb, &$object) {
 
 	$TAccessory = TAccessory::getAccessories($PDOdb, $object->id, $object->element);
 
-	echo '<table width="100%" class="border"><tr class="liste_titre"><td>'.$langs->trans('Accessory').'</td><td>'.$langs->trans('Qty').'</td></tr>';
+	echo '<br /><br /><table width="100%" class="border"><tr class="liste_titre"><td>'.$langs->trans('Accessory').'</td><td>'.$langs->trans('Qty').'</td>
+	<td>'.$langs->trans('Emplacement').'</td><td>'.$langs->trans('Note').'</td><td>&nbsp;</td></tr>';
 
 	foreach($TAccessory as &$accessory) {
 		
@@ -72,12 +90,18 @@ function _card(&$PDOdb, &$object) {
 		echo '<tr>
 			<td>'.$p->getNomUrl(1).'</td>
 			<td>'.$formCore->texte('', 'TAccessory['.$accessory->getId().'][qty]', $accessory->qty, 3,50).'</td>
+			<td>'.$formCore->texte('', 'TAccessory['.$accessory->getId().'][emplacement]', $accessory->emplacement, 30,255).'</td>
+			<td>'.$formCore->texte('', 'TAccessory['.$accessory->getId().'][note]', $accessory->note, 30,255).'</td>
+			<td><a href="?action=delete&fk_object='.$object->id.'&type_object='.$object->element.'&id='.$accessory->getId().'">'.img_delete().'</a></td>
 		</tr>';
 		
 	}
 	
 	echo '</table>';
 
+	echo '<div class="tabsAction">';
+	echo $formCore->btsubmit($langs->trans('Save'), 'btsave');
+	echo '</div>';
 
 	$formCore->end();
 
