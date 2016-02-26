@@ -59,6 +59,48 @@ class ActionsAccessory
 	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
 	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
 	 */
+	 
+	function formObjectOptions($parameters, &$object, &$action, $hookmanager) {
+		if (in_array('propalcard', explode(':', $parameters['context'])))
+		{
+			 
+			?><script type="text/javascript">
+			function addLineAccessory(lineid) {
+		
+				ToAddLine = [];
+				$('tr[accessory-line-id='+lineid+'] tr[accessory-id]').each(function(i,item) {
+				
+					var obj = {
+						accessoryid:$(item).attr('accessory-id')
+						,qty : $(item).find('input[rel=qty]').val()
+						,emplacement : $(item).find('input[rel=emplacement]').val()
+						,note : $(item).find('input[rel=note]').val()
+					};
+					ToAddLine.push(obj);
+					
+				});
+				
+				$.ajax({
+					url:"<?php echo dol_buildpath('/accessory/script/interface.php') ?>"
+					,data:{
+						put:'addlines'
+						,lineid:lineid
+						,object_type:'<?php echo $object->element; ?>'
+						,object_id:<?php echo $object->id; ?>
+						,ToAddLine:ToAddLine
+						,txtva:$('#tva_tx').val()
+					}
+					
+				});
+				
+				openAccessories(lineid);
+				
+			}
+			</script><?php
+					
+		}
+	} 
+	
 	function printObjectLine($parameters, &$object, &$action, $hookmanager)
 	{
 		
@@ -83,7 +125,8 @@ class ActionsAccessory
 				
 				if(!empty($TAccessory)) {
 					
-					global $db;
+					global $db, $langs;
+					$langs->load('accessory@accessory');
 					dol_include_once('/product/class/product.class.php');
 					
 					?>
@@ -92,7 +135,7 @@ class ActionsAccessory
 						$("#row-<?php echo $line->id; ?>>td").first().append('&nbsp;<a href="javascript:openAccessories(<?php echo $line->id; ?>)">A</a>&nbsp;')
 					</script>
 					
-					<tr accessory-line-id="<?php echo $line->id ?>" style="display:none"><td colspan="0"><?php
+					<tr accessory-line-id="<?php echo $line->id ?>" ><td colspan="0"><?php //style="display:none"
 						
 						$formCore = new TFormCore;
 						
@@ -102,17 +145,19 @@ class ActionsAccessory
 							
 							$p=new Product($db);
 							if($p->fetch($accessory->fk_accessory)>0) {
-								echo '<tr>
+								echo '<tr accessory-id="'.$accessory->getId().'">
 									<td style="padding-left:50px;">'.$p->getNomUrl(1).'</td>
-									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][qty]', $accessory->qty, 3,50).'</td>
-									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][emplacement]', $accessory->emplacement, 30,255).'</td>
-									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][note]', $accessory->note, 30,255).'</td>
-									<td>'.$formCore->checkbox1('', 'TAccessory['.$line->id.']['.$accessory->getId().'][add]', 1).'</td>
+									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][qty]', $accessory->qty, 3,50, ' rel="qty" ').'</td>
+									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][emplacement]', $accessory->emplacement, 30,255, ' rel="emplacement" ').'</td>
+									<td>'.$formCore->texte('', 'TAccessory['.$line->id.']['.$accessory->getId().'][note]', $accessory->note, 30,255, ' rel="note"').'</td>
+									<td>'.$formCore->checkbox1('', 'TAccessory['.$line->id.']['.$accessory->getId().'][add]', 1,0,' rel="checked" ').'</td>
 								</tr>';
 								
 							}
 							
 						}	
+						
+						echo '<tr><td colspan="5" align="right"><input type="button" onclick="addLineAccessory('.$line->id.')" value="'.$langs->trans('LinkAccessories').'" /></td></tr>';
 
 						echo '</table>';
 
