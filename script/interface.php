@@ -10,30 +10,32 @@
 	$put=GETPOST('put');
 
 	
+	$PDOdb=new TPDOdb;
+	
 	switch ($put) {
 		case 'addlines':
 			
 			$object_type=GETPOST('object_type');
 			$object_id=(int)GETPOST('object_id');
-			$ToAddLine=GETPOST('ToAddLine');
+			$ToAddLine=$_REQUEST['ToAddLine'];
 			$txtva=(float)GETPOST('txtva');
 			$lineid=(int)GETPOST('lineid');
 			
-			if(!empty($TProduct)) {
+			if(!empty($ToAddLine)) {
 				$o=new $object_type($db);
 				$o->fetch($object_id);
 				
 				foreach($ToAddLine as &$addline) {
 					$a=new TAccessory;
-					$a->load($PDOdb, $addline->accessoryid);
-						
-					$p=new Product($db);
-					$p->fetch($fk_product);
+					$PDOdb->debug=true;
 					
-					$o->addline($p->description, $p->price, $qty, $txtva,0,0,$fk_product);
+					if($a->load($PDOdb, $addline['accessoryid'])) {
+						$p=new Product($db);
+						if($p->fetch($a->fk_accessory)>0) {
+							$res = $o->addline($p->description, $p->price, $addline['qty'], $txtva,0,0,$p->id);
+						}
+					}
 				}
-				
-				
 			}
 			
 			echo 1;

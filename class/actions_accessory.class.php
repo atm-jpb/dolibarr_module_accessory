@@ -80,8 +80,10 @@ class ActionsAccessory
 					
 				});
 				
+				openAccessories(lineid);
+	
 				$.ajax({
-					url:"<?php echo dol_buildpath('/accessory/script/interface.php') ?>"
+					url:"<?php echo dol_buildpath('/accessory/script/interface.php',1) ?>"
 					,data:{
 						put:'addlines'
 						,lineid:lineid
@@ -90,10 +92,13 @@ class ActionsAccessory
 						,ToAddLine:ToAddLine
 						,txtva:$('#tva_tx').val()
 					}
+					,method:'post'
+				}).done(function(data) {
+					
+					//document.location.href = document.location.href; 
 					
 				});
 				
-				openAccessories(lineid);
 				
 			}
 			</script><?php
@@ -135,7 +140,7 @@ class ActionsAccessory
 						$("#row-<?php echo $line->id; ?>>td").first().append('&nbsp;<a href="javascript:openAccessories(<?php echo $line->id; ?>)">A</a>&nbsp;')
 					</script>
 					
-					<tr accessory-line-id="<?php echo $line->id ?>" ><td colspan="0"><?php //style="display:none"
+					<tr accessory-line-id="<?php echo $line->id ?>" style="display:none"><td colspan="0"><?php
 						
 						$formCore = new TFormCore;
 						
